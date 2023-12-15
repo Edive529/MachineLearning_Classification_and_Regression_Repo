@@ -1,0 +1,72 @@
+{% extends "class_base.html" %}
+
+{% block main %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">Heart Problems Classification Prediction Results</h1>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Order</th>
+                                <th scope="col">Age</th>
+                                <th scope="col">Gender</th>
+                                <th scope="col">Impulse</th>
+                                <th scope="col">Pressure High</th>
+                                <th scope="col">Pressure Low</th>
+                                <th scope="col">Glucose</th>
+                                <th scope="col">KCM</th>
+                                <th scope="col">Troponin</th>
+                                <th scope="col">Classification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in dataset %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ data.age }}</td>
+                                    <td>{% if data.gender == 1 %} Male {% else %} Female {% endif %}</td>
+                                    <td>{{ data.impulse }}</td>
+                                    <td>{{ data.pressurehigh }}</td>
+                                    <td>{{ data.pressurelow }}</td>
+                                    <td>{{ data.glucose }}</td>
+                                    <td>{{ data.kcm }}</td>
+                                    <td>{{ data.troponin }}</td>
+                                    <td>{% if data.classification == 1 %} Positive {% else %} Negative {% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Display pagination links -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        {% if dataset.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">&laquo; first</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ dataset.previous_page_number }}">previous</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item disabled">
+                            Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
+                        </li>
+
+                        {% if dataset.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ dataset.next_page_number }}">next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ dataset.paginator.num_pages }}">last &raquo;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+{% endblock %}

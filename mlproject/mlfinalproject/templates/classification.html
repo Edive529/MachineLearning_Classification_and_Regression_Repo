@@ -1,0 +1,157 @@
+{% extends "class_base.html" %}
+
+{% block main %}
+<style>
+    .custom-form {
+        background-color: rgba(255, 255, 255, 0.8); /* White transparent background */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow for a slight border effect */
+    }
+
+    .custom-bg {
+        background-color: #ffdddd; /* Light red background */
+        border-radius: 10px;
+        padding: 20px;
+    }
+</style>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Prediction Results</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Prediction Input:</h5>
+                <div><strong>Age:</strong> <span id="ag"></span></div>
+                <div><strong>Gender:</strong> <span id="gn"></span></div>
+                <div><strong>Heart Rate:</strong> <span id="im"></span></div>
+                <div><strong>Systolic BP:</strong> <span id="ph"></span></div>
+                <div><strong>Diastolic BP:</strong> <span id="pl"></span></div>
+                <div><strong>Glucose:</strong> <span id="gl"></span></div>
+                <div><strong>CK-MB:</strong> <span id="kc"></span></div>
+                <div><strong>Troponin:</strong> <span id="tr"></span></div>
+                <h5 class="pt-3">Prediction Classification:</h5>
+                <div id="prediction"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a class="btn btn-primary" href="/class_results" role="button">View Results</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pt-5 ">
+    <div class="row justify-content-md-center">
+        <div class="col-md-6 ">
+            <h1 class="mb-4">Heart Issue Classification</h1>
+            <form action="" id="post-form" class="custom-form">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="age">Age</label>
+                        <input type="number" step="0.1" class="form-control" id="age" name="age" placeholder="Enter Age" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="gender">Gender</label>
+                        <select class="form-control" id="gender" name="gender">
+                            <option value="1">Male</option>
+                            <option value="2">Female</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="pressurehigh">Blood Pressure</label>
+                        <input type="number" step="0.1" class="form-control" id="pressurehigh" name="pressurehigh" placeholder="Enter Systolic" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="pressurelow"></label>
+                        <input type="number" step="0.1" class="form-control" id="pressurelow" name="pressurelow" placeholder="Enter Diastolic" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="impulse">Heart Rate</label>
+                        <input type="number" step="0.1" class="form-control" id="impulse" name="impulse" placeholder="Enter Heart Rate" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="glucose">Blood Sugar</label>
+                        <input type="number" step="0.1" class="form-control" id="glucose" name="glucose" placeholder="Enter Sugar Level" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="kcm">CK-MB Test</label>
+                        <input type="text" class="form-control" id="kcm" name="kcm" placeholder="" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="troponin">Troponin</label>
+                        <input type="text" class="form-control" id="troponin" name="troponin" placeholder="Enter Troponin" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+   $(document).on('submit', '#post-form',function(e){
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'{% url "mlfinalproject:classification_pred" %}',
+            data:{
+                age:$('#age').val(),
+                gender:$('#gender').val(),
+                impulse:$('#impulse').val(),
+                pressurehigh:$('#pressurehigh').val(),
+                pressurelow:$('#pressurelow').val(),
+                glucose:$('#glucose').val(),
+                kcm:$('#kcm').val(),
+                troponin:$('#troponin').val(),
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+                action: 'post'
+            },
+            success:function(json) {
+                document.forms["post-form"].reset();
+                if (json['result'] === 1) {
+                // Set the content of the element to 'positive'
+                document.getElementById("prediction").innerHTML = "The person's heart is problematic";
+            } else {
+                // Set the content based on the actual result
+                document.getElementById("prediction").innerHTML =  "The person's heart is not problematic";
+            }
+                document.getElementById("ag").innerHTML = json['age']
+
+                if (json['gender'] === 1) {
+                // Set the content of the element to 'positive'
+                document.getElementById("gn").innerHTML = "Male";
+            } else {
+                // Set the content based on the actual result
+                document.getElementById("gn").innerHTML =  "Female";
+            }
+
+                document.getElementById("im").innerHTML = json['impulse']
+                document.getElementById("ph").innerHTML = json['pressurehigh']
+                document.getElementById("pl").innerHTML = json['pressurelow']
+                document.getElementById("gl").innerHTML = json['glucose']
+                document.getElementById("kc").innerHTML = json['kcm']
+                document.getElementById("tr").innerHTML = json['troponin']
+            },
+            error : function(xhr,errmsg,err) {
+
+            }
+        });
+    })
+</script>  
+{% endblock %}

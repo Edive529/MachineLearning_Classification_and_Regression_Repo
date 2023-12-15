@@ -1,0 +1,235 @@
+{% extends "class_base.html" %}
+
+{% block main %}
+<style>
+    .custom-form {
+        background-color: rgba(255, 255, 255, 0.8); /* White transparent background */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow for a slight border effect */
+    }
+
+    .custom-bg {
+        background-color: #ffdddd; /* Light red background */
+        border-radius: 10px;
+        padding: 20px;
+    }
+</style>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Prediction Results</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Prediction Input:</h5>
+                <div><strong>Carat:</strong> <span id="car"></span></div>
+                <div><strong>Cut Grade:</strong> <span id="ct"></span></div>
+                <div><strong>Color Grade:</strong> <span id="co"></span></div>
+                <div><strong>Clarity Grade:</strong> <span id="cl"></span></div>
+                <div><strong>Depth:</strong> <span id="de"></span></div>
+                <div><strong>Table:</strong> <span id="tb"></span></div>
+                <div><strong>X:</strong> <span id="x"></span></div>
+                <div><strong>Y:</strong> <span id="y"></span></div> 
+                <div><strong>Z:</strong> <span id="z"></span></div>
+                <h5 class="pt-3">Price Predicted for the Diamond:</h5>
+                <div id="result"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a class="btn btn-primary" href="/class_results" role="button">View Results</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    
+    <h1 class="mb-4">Diamond Price Prediction</h1>
+    <div class="row justify-content-md-center"> 
+        <div class="col-md-6">
+            <form action="" id="post-form" class="custom-form">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="carat">Carat</label>
+                        <input type="text" class="form-control" id="carat" name="carat" placeholder="Enter carat" required>
+                    </div>      
+                </div>
+                 
+                <div class="form-row">
+                    <label for="cut">Cut Grade</label>
+                        <select class="form-control" id="cut" name="cut">
+                            <option value="0">Fair - Lowest</option>
+                            <option value="1">Good</option>
+                            <option value="2">Very Good</option>
+                            <option value="3">Premium</option>
+                            <option value="4">Ideal - Highest</option> 
+                        </select>
+                </div>
+
+                <div class="form-row"> 
+                    <div class="form-group col-md-6">
+                        <label for="color">Color Grade</label>
+                        <select class="form-control" id="color" name="color">
+                            <option value="0">J - Lowest</option>
+                            <option value="1">I</option>
+                            <option value="2">H</option>
+                            <option value="3">G</option>
+                            <option value="4">F</option> 
+                            <option value="5">E</option>
+                            <option value="6">D - Highest</option> 
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="clarity">Clarity Grade</label>
+                        <select class="form-control" id="clarity" name="clarity">
+                            <option value="0">I1 - Lowest</option>
+                            <option value="1">SI2</option>
+                            <option value="2">SI1</option>
+                            <option value="3">VS2</option>
+                            <option value="4">VS1</option> 
+                            <option value="5">VVS2</option>
+                            <option value="6">VVS1</option>
+                            <option value="7">IF - Highest</option> 
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="depth">Depth</label>
+                        <input type="text" step="0.1" class="form-control" id="depth" name="depth" placeholder="Enter depth" required>
+                    </div> 
+                    <div class="form-group col-md-6">
+                        <label for="table">Table</label>
+                        <input type="text" class="form-control" id="table" name="table" placeholder="Enter table" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="rx">X</label>
+                        <input type="text" class="form-control" id="rx" name="rx" placeholder="Enter X" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="ry">Y</label>
+                        <input type="text" class="form-control" id="ry" name="ry" placeholder="Enter Y" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="rz">Z</label>
+                        <input type="text" class="form-control" id="rz" name="rz" placeholder="Enter Z" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Submit</button>
+            </form> 
+        </div>
+        <div class="col-md-6"> 
+            <!-- Insert your picture here -->
+            <img src="/static/css/dias.jpeg" alt="Your Image" class="img-fluid">
+        </div>
+        <div id="live-result" style="clear: both;">
+            <!-- Live result will be displayed here -->
+        </div>
+    </div>
+</div>
+
+
+<script> 
+        
+$(document).on('submit', '#post-form', function (e) {
+    e.preventDefault();
+    $.ajax({
+        type: 'post',
+        url: '{% url "mlfinalproject:reg_pred" %}',
+        data: {
+            carat: $('#carat').val(),
+            cut: $('#cut').val(),
+            color: $('#color').val(),
+            clarity: $('#clarity').val(),
+            depth: $('#depth').val(),
+            table: $('#table').val(),
+            rx: $('#rx').val(),
+            ry: $('#ry').val(),
+            rz: $('#rz').val(),
+            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+            action: 'post'
+        },
+        success: function (json) {
+            document.forms["post-form"].reset();
+            document.getElementById("result").innerHTML = '<b>$</b> ' + json['result'];
+            document.getElementById("car").innerHTML = json['carat'];
+
+            // Map numerical 'cut' values to labels
+            var cutLabels = ['Fair', 'Good', 'Very Good', 'Premium', 'Ideal'];
+            var cutValue = parseInt(json['cut']);
+            var cutLabel = cutLabels[cutValue];
+            document.getElementById("ct").innerHTML = cutLabel;
+
+            // Map numerical 'color' values to labels
+            var colorLabels = ['J', 'I', 'H', 'G', 'F', 'E', 'D'];
+            var colorValue = parseInt(json['color']);
+            var colorLabel = colorLabels[colorValue];
+            document.getElementById("co").innerHTML = colorLabel;
+
+            // Map numerical 'clarity' values to labels
+            var clarityLabels = ['I1', 'SI2', 'SI1', 'VS2', 'VS1', 'VVS2', 'VVS1', 'IF'];
+            var clarityValue = parseInt(json['clarity']);
+            var clarityLabel = clarityLabels[clarityValue];
+            document.getElementById("cl").innerHTML = clarityLabel;
+
+            document.getElementById("de").innerHTML = json['depth'];
+            document.getElementById("tb").innerHTML = json['table'];
+            document.getElementById("x").innerHTML = json['rx'];
+            document.getElementById("y").innerHTML = json['ry'];
+            document.getElementById("z").innerHTML = json['rz'];
+        },
+        error: function (xhr, errmsg, err) {
+            // Handle error
+        }
+    });
+    
+}); 
+
+
+// Add input event listeners for live updates
+$(document).on('input', '#carat, #cut, #color, #clarity, #depth, #table, #rx, #ry, #rz', function () {
+    sendLiveUpdateRequest();
+});
+
+function sendLiveUpdateRequest() {
+    // Prepare data to send in the AJAX request
+    var data = {
+        carat: $('#carat').val(),
+        cut: $('#cut').val(),
+        color: $('#color').val(),
+        clarity: $('#clarity').val(),
+        depth: $('#depth').val(),
+        table: $('#table').val(),
+        rx: $('#rx').val(),
+        ry: $('#ry').val(),
+        rz: $('#rz').val(),
+        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+        action: 'live_update'
+    };
+
+    // Send AJAX request for live updates
+    $.ajax({
+        type: 'post',
+        url: '{% url "mlfinalproject:reg_pred" %}',
+        data: data,
+        success: function (json) {
+            // Update only the price result in the modal
+            document.getElementById("live-result").innerHTML = 'Price Predicted for the Diamond: ' + json['result'];
+        },
+        error: function (xhr, errmsg, err) {
+            // Handle error
+        }
+    });
+}
+</script>  
+{% endblock %}

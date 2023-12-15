@@ -1,0 +1,24 @@
+<!-- search_results.html -->
+
+{% for data in dataset %}
+    <tr> 
+        <td>{{ forloop.counter }}</td>
+        <td>{{ data.age }}</td>
+        <td>{% if data.gender == 1 %}
+            Male
+        {% else %}
+            Female
+        {% endif %}</td>
+        <td>{{ data.impulse }}</td>
+        <td>{{ data.pressurehigh }}</td>
+        <td>{{ data.pressurelow }}</td>
+        <td>{{ data.glucose }}</td>
+        <td>{{ data.kcm }}</td>
+        <td>{{ data.troponin }}</td>
+        <td>{% if data.classification == 1 %}
+            Positive
+        {% else %}
+            Negative
+        {% endif %}</td>
+    </tr>
+{% endfor %}
