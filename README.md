@@ -4,6 +4,7 @@ this is a school project data analytics. We were Required to gather two kinds of
 # INSTRUCTIONS To start the web app
 
 Open a terminal and navigate to the project directory.
+NOTE!!! UNZIP FILE "RandomForestRegressor_n=150" TO ACCESS THE REGRESSION MACHINE LEARNING MODEL
 
 2. Activate the virtual environment:
 
